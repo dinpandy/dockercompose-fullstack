@@ -1,0 +1,33 @@
+#docker volume create --name=mysql-volume
+#check port status in windows netstat -ano | findstr :3306
+#To kill listening taskkill /PID PIDnumber /F
+services:
+  frontend:
+    build: ./fe # Front End image building from Docker file
+    container_name: fecont # Container name
+    ports:
+      - "8080:80" # Expose port 8080 on the host to port 80 in the container
+    volumes:
+      - ./fe/html:/usr/local/apache2/htdocs/ # Mount local 'html' directory to the container
+
+  database:
+    build: ./db # MySQL image
+    container_name: dbcont
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword # Set MySQL root password
+      MYSQL_DATABASE: tecvinson_registration # Create a database
+    ports:
+      - "3306:3306" # Expose port 3306 for MySQL
+    volumes:
+      - mysql-volume:/var/lib/mysql # Store MySQL data in a named volume
+
+  backend:
+    build: ./be #Backend image building
+    container_name: becont
+    ports:
+      - "5500:5500"
+    depends_on:
+      - database
+volumes:
+  mysql-volume:
+    external: true
